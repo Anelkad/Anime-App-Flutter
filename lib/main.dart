@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'anime_details.dart';
 import 'api_client.dart';
 
 void main() {
@@ -11,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // getMovie();
     return MaterialApp(
-      home: MovieDetailsPage(),
+      home: MovieDetailsPage(animeId: 50594),
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Color(0xFF1D2135),
         appBarTheme: AppBarTheme(
@@ -23,26 +24,43 @@ class MyApp extends StatelessWidget {
 }
 
 class MovieDetailsPage extends StatefulWidget {
+  final int animeId;
+
+  MovieDetailsPage({required this.animeId});
+
   @override
   State<MovieDetailsPage> createState() => _MovieDetailsPageState();
 }
 
 class _MovieDetailsPageState extends State<MovieDetailsPage> {
-  Future<void> getMovie() async {
+  late Future<AnimeDetailsResponse> animeDetailsFuture;
+
+  Future<AnimeDetailsResponse> getAnime() async {
     final movieApi = ApiClient(Dio());
 
     try {
-      final movie = await movieApi.getAnime(50594);
-      print(movie.title);
+      return await movieApi.getAnime(widget.animeId);
     } on DioException catch (error) {
-      print(error.message);
+      throw error;
+    }
+  }
+
+  void getTopAnime() async {
+    final movieApi = ApiClient(Dio());
+
+    try {
+      var result = await movieApi.getTopAnime();
+      print(result.data[0].title);
+    } on DioException catch (error) {
+      throw error;
     }
   }
 
   @override
   void initState() {
     super.initState();
-    getMovie();
+    getTopAnime();
+    animeDetailsFuture = getAnime();
   }
 
   @override
@@ -57,31 +75,31 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           },
         ),
       ),
-      body: Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 19),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10.0),
-              child: Image.network(
-                'https://cdn.myanimelist.net/images/anime/1598/128450l.jpg',
-                width: double.infinity,
-                height: 200.0,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          Text(
-            'Suzume no Tojimari',
-            style: TextStyle(
-              fontSize: 24,
-              color: Color(0xFFE5E5E5),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+      body: FutureBuilder<AnimeDetailsResponse>(
+        future: animeDetailsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Show a loading indicator while fetching data
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            // Show an error message if there's an error
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          } else if (snapshot.hasData) {
+            // Show the anime details once the data is available
+            AnimeDetails animeDetails = snapshot.data!.data;
+            return AnimeDetailsView(animeDetails: animeDetails);
+          } else {
+            // Handle other states here if needed
+            return Center(
+              child: Text('Unexpected state.'),
+            );
+          }
+        },
       ),
-      // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
