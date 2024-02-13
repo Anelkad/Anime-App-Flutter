@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:movie_app_flutter/anime_details.dart';
 import 'package:movie_app_flutter/api_client.dart';
 
 import 'movie_details_page.dart';
