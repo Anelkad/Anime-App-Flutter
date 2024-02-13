@@ -44,9 +44,9 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<TopAnimeResponse> getTopAnime() async {
+  Future<TopAnimeResponse> getTopAnime(type) async {
     const _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'type': type};
     final _headers = <String, dynamic>{};
     final Map<String, dynamic>? _data = null;
     final _result = await _dio

@@ -11,7 +11,7 @@ abstract class ApiClient {
   Future<AnimeDetailsResponse> getAnime(@Path("id") int id);
 
   @GET('top/anime')
-  Future<TopAnimeResponse> getTopAnime();
+  Future<TopAnimeResponse> getTopAnime(@Query("type") String type);
 }
 
 class TopAnimeResponse {

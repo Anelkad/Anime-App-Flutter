@@ -1,56 +1,27 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'anime_details.dart';
-import 'api_client.dart';
+import 'package:movie_app_flutter/anime_details.dart';
+import 'package:movie_app_flutter/api_client.dart';
+
+import 'movie_details_page.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    // getMovie();
-    return MaterialApp(
-      home: MovieDetailsPage(animeId: 50594),
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Color(0xFF1D2135),
-        appBarTheme: AppBarTheme(
-          backgroundColor: Color(0xFF1D2135),
-        ),
-      ),
-    );
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class MovieDetailsPage extends StatefulWidget {
-  final int animeId;
+class _MyAppState extends State<MyApp> {
+  late Future<TopAnimeResponse> topAnimeResponse;
 
-  MovieDetailsPage({required this.animeId});
-
-  @override
-  State<MovieDetailsPage> createState() => _MovieDetailsPageState();
-}
-
-class _MovieDetailsPageState extends State<MovieDetailsPage> {
-  late Future<AnimeDetailsResponse> animeDetailsFuture;
-
-  Future<AnimeDetailsResponse> getAnime() async {
+  Future<TopAnimeResponse> getTopAnime() async {
     final movieApi = ApiClient(Dio());
 
     try {
-      return await movieApi.getAnime(widget.animeId);
-    } on DioException catch (error) {
-      throw error;
-    }
-  }
-
-  void getTopAnime() async {
-    final movieApi = ApiClient(Dio());
-
-    try {
-      var result = await movieApi.getTopAnime();
-      print(result.data[0].title);
+      return await movieApi.getTopAnime('movie');
     } on DioException catch (error) {
       throw error;
     }
@@ -58,25 +29,21 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
 
   @override
   void initState() {
+    topAnimeResponse = getTopAnime();
     super.initState();
-    getTopAnime();
-    animeDetailsFuture = getAnime();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.background,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            // Navigator.pop(context);
-          },
+    return MaterialApp(
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: Color(0xFF1D2135),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Color(0xFF1D2135),
         ),
       ),
-      body: FutureBuilder<AnimeDetailsResponse>(
-        future: animeDetailsFuture,
+      home: FutureBuilder<TopAnimeResponse>(
+        future: topAnimeResponse,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             // Show a loading indicator while fetching data
@@ -89,9 +56,9 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
               child: Text('Error: ${snapshot.error}'),
             );
           } else if (snapshot.hasData) {
-            // Show the anime details once the data is available
-            AnimeDetails animeDetails = snapshot.data!.data;
-            return AnimeDetailsView(animeDetails: animeDetails);
+            return TopAnime(
+              items: snapshot.data!.data,
+            );
           } else {
             // Handle other states here if needed
             return Center(
@@ -100,6 +67,65 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           }
         },
       ),
+    );
+  }
+}
+
+class TopAnime extends StatelessWidget {
+  final List<AnimeDetails> items;
+
+  TopAnime({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: Image.network(
+                    items[index].url,
+                    width: double.infinity,
+                    height: 235,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                SizedBox(height: 9),
+                Text(
+                  items[index].title,
+                  style: TextStyle(
+                      fontSize: 15,
+                      color: Color(0xFFE5E5E5),
+                      fontWeight: FontWeight.w500,
+                      decoration: TextDecoration.none),
+                  textAlign: TextAlign.start,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        MovieDetailsPage(animeId: items[index].id),
+                  ));
+            });
+      },
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          // Number of columns
+          crossAxisSpacing: 20,
+          // Spacing between columns
+          mainAxisSpacing: 20,
+          // Spacing between rows
+          childAspectRatio: 0.7,
+          mainAxisExtent: 280),
     );
   }
 }
