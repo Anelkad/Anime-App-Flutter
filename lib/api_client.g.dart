@@ -12,9 +12,7 @@ class _ApiClient implements ApiClient {
   _ApiClient(
     this._dio, {
     this.baseUrl,
-  }) {
-    baseUrl ??= 'https://api.jikan.moe/v4/';
-  }
+  });
 
   final Dio _dio;
 

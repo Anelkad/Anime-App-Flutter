@@ -1,6 +1,6 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:movie_app_flutter/repository.dart';
 import 'anime_details.dart';
 import 'api_client.dart';
 
@@ -16,20 +16,10 @@ class MovieDetailsPage extends StatefulWidget {
 class _MovieDetailsPageState extends State<MovieDetailsPage> {
   late Future<AnimeDetailsResponse> animeDetailsFuture;
 
-  Future<AnimeDetailsResponse> getAnime() async {
-    final movieApi = ApiClient(Dio());
-
-    try {
-      return await movieApi.getAnime(widget.animeId);
-    } on DioException catch (error) {
-      throw error;
-    }
-  }
-
   @override
   void initState() {
     super.initState();
-    animeDetailsFuture = getAnime();
+    animeDetailsFuture = AnimeRepository().getAnime(widget.animeId);
   }
 
   @override

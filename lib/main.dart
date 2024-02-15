@@ -1,6 +1,7 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_app_flutter/api_client.dart';
+import 'package:movie_app_flutter/repository.dart';
+import 'package:movie_app_flutter/service_locator.dart';
 
 import 'movie_details_page.dart';
 
@@ -16,19 +17,10 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late Future<TopAnimeResponse> topAnimeResponse;
 
-  Future<TopAnimeResponse> getTopAnime() async {
-    final movieApi = ApiClient(Dio());
-
-    try {
-      return await movieApi.getTopAnime('movie');
-    } on DioException catch (error) {
-      throw error;
-    }
-  }
-
   @override
   void initState() {
-    topAnimeResponse = getTopAnime();
+    initLocator();
+    topAnimeResponse = AnimeRepository().getTopAnime();
     super.initState();
   }
 
@@ -119,7 +111,7 @@ class TopAnime extends StatelessWidget {
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           // Number of columns
-          crossAxisSpacing: 20,
+          crossAxisSpacing: 23,
           // Spacing between columns
           mainAxisSpacing: 20,
           // Spacing between rows
