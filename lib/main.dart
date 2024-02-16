@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:movie_app_flutter/api_client.dart';
-import 'package:movie_app_flutter/repository.dart';
+import 'package:movie_app_flutter/data/api_client.dart';
+import 'package:movie_app_flutter/data/repository.dart';
 import 'package:movie_app_flutter/service_locator.dart';
 
-import 'anime_details_bloc.dart';
-import 'movie_details_page.dart';
+import 'presentation/bloc/anime_details_bloc.dart';
+import 'presentation/movie_details_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -36,7 +36,9 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       home: MultiBlocProvider(
-        providers: [BlocProvider(create: (context) => AnimeDetailsBloc())],
+        providers: [
+          BlocProvider(create: (context) => AnimeDetailsBloc(sl.get()))
+        ],
         child: FutureBuilder<TopAnimeResponse>(
           future: topAnimeResponse,
           builder: (context, snapshot) {

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'api_client.dart';
+import '../data/api_client.dart';
 
 class AnimeDetailsView extends StatelessWidget {
   late AnimeDetails animeDetails;
