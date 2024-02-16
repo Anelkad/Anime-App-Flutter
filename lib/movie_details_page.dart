@@ -1,8 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:movie_app_flutter/repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app_flutter/anime_details_bloc.dart';
+
 import 'anime_details.dart';
-import 'api_client.dart';
 
 class MovieDetailsPage extends StatefulWidget {
   final int animeId;
@@ -14,12 +14,13 @@ class MovieDetailsPage extends StatefulWidget {
 }
 
 class _MovieDetailsPageState extends State<MovieDetailsPage> {
-  late Future<AnimeDetailsResponse> animeDetailsFuture;
+  late AnimeDetailsBloc animeDetailsBloc;
 
   @override
   void initState() {
+    animeDetailsBloc = AnimeDetailsBloc();
+    animeDetailsBloc..add(LoadAnimeDetails(animeId: widget.animeId));
     super.initState();
-    animeDetailsFuture = AnimeRepository().getAnime(widget.animeId);
   }
 
   @override
@@ -34,29 +35,19 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
           },
         ),
       ),
-      body: FutureBuilder<AnimeDetailsResponse>(
-        future: animeDetailsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Show a loading indicator while fetching data
+      body: BlocBuilder<AnimeDetailsBloc, AnimeDetailsState>(
+        bloc: animeDetailsBloc,
+        builder: (BuildContext context, state) {
+          if (state is AnimeDetailsInitial) {
             return Center(
               child: CircularProgressIndicator(),
             );
-          } else if (snapshot.hasError) {
-            // Show an error message if there's an error
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          } else if (snapshot.hasData) {
-            // Show the anime details once the data is available
-            AnimeDetails animeDetails = snapshot.data!.data;
-            return AnimeDetailsView(animeDetails: animeDetails);
-          } else {
-            // Handle other states here if needed
-            return Center(
-              child: Text('Unexpected state.'),
-            );
+          } else if (state is AnimeDetailsLoaded) {
+            return AnimeDetailsView(animeDetails: state.animeDetails);
           }
+          return Center(
+            child: Text('Error'),
+          );
         },
       ),
     );

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app_flutter/api_client.dart';
 import 'package:movie_app_flutter/repository.dart';
 import 'package:movie_app_flutter/service_locator.dart';
 
+import 'anime_details_bloc.dart';
 import 'movie_details_page.dart';
 
 void main() {
@@ -33,30 +35,33 @@ class _MyAppState extends State<MyApp> {
           backgroundColor: Color(0xFF1D2135),
         ),
       ),
-      home: FutureBuilder<TopAnimeResponse>(
-        future: topAnimeResponse,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Show a loading indicator while fetching data
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            // Show an error message if there's an error
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          } else if (snapshot.hasData) {
-            return TopAnime(
-              items: snapshot.data!.data,
-            );
-          } else {
-            // Handle other states here if needed
-            return Center(
-              child: Text('Unexpected state.'),
-            );
-          }
-        },
+      home: MultiBlocProvider(
+        providers: [BlocProvider(create: (context) => AnimeDetailsBloc())],
+        child: FutureBuilder<TopAnimeResponse>(
+          future: topAnimeResponse,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // Show a loading indicator while fetching data
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              // Show an error message if there's an error
+              return Center(
+                child: Text('Error: ${snapshot.error}'),
+              );
+            } else if (snapshot.hasData) {
+              return TopAnime(
+                items: snapshot.data!.data,
+              );
+            } else {
+              // Handle other states here if needed
+              return Center(
+                child: Text('Unexpected state.'),
+              );
+            }
+          },
+        ),
       ),
     );
   }
